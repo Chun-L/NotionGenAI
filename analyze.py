@@ -54,6 +54,7 @@ def call_gemini_for_random_topic():
     return title, content, all_tags
 
 def write_to_notion(title_content, analysis_text,tags_list):
+    today_date = datetime.datetime.now().strftime("%Y-%m-%d")
     url = "https://api.notion.com/v1/pages"
     headers = {
         "Authorization": f"Bearer {NOTION_TOKEN}",
