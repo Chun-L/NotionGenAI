@@ -61,6 +61,11 @@ def write_to_notion(title_content, analysis_text):
     return res.status_code
 
 if __name__ == "__main__":
+    # 加入這行來偵錯：
+    for m in client.models.list():
+        print(f"可用模型: {m.name}")
+
+    
     generated_title, generated_content = call_gemini_for_random_topic()
     print(f"AI 今日選題: {generated_title}")
     
