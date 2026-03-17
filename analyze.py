@@ -69,6 +69,33 @@ def write_to_notion(title_content, analysis_text,tags_list):
         "Content-Type": "application/json",
         "Notion-Version": "2022-06-28"
     }
+
+    # 將分析文本依照換行拆分，並過濾掉空行
+    lines = [l.strip() for l in analysis_text.split('\n') if l.strip()]
+    
+    children_blocks = [
+        {"object": "block", "type": "table_of_contents", "table_of_contents": {}},
+        {"object": "block", "type": "divider", "divider": {}}
+    ]
+
+    for line in lines:
+        # 簡單的格式轉換邏輯
+        if line.startswith(">"): # 處理引用塊
+            block = {
+                "object": "block", "type": "quote",
+                "quote": { "rich_text": [{ "text": { "content": line.replace(">", "").strip() } }] }
+            }
+        elif line.startswith("###") or "：" in line[:10]: # 處理標題感
+            block = {
+                "object": "block", "type": "heading_3",
+                "heading_3": { "rich_text": [{ "text": { "content": line.replace("###", "").strip() } }] }
+            }
+        else: # 一般段落
+            block = {
+                "object": "block", "type": "paragraph",
+                "paragraph": { "rich_text": [{ "text": { "content": line } }] }
+            }
+        children_blocks.append(block)
     
     payload = {
         "parent": {"database_id": DATABASE_ID},
@@ -85,38 +112,7 @@ def write_to_notion(title_content, analysis_text,tags_list):
                 "date": {"start": today_date}
             }
         },
-        "children": [
-            # 1. 插入目錄區塊
-            {
-                "object": "block",
-                "type": "table_of_contents",
-                "table_of_contents": { "color": "default" }
-            },
-            # 2. 分隔線 (讓版面更美觀)
-            {
-                "object": "block",
-                "type": "divider",
-                "divider": {}
-            },
-            # 3. 內容大標題 (Heading 2) - 這會出現在目錄中
-            {
-                "object": "block",
-                "type": "heading_2",
-                "heading_2": {
-                    "rich_text": [ { "text": { "content": "深度文本分析" } } ]
-                }
-            },
-            # 4. 實際分析內容 (Paragraph)
-            {
-                "object": "block",
-                "type": "paragraph",
-                "paragraph": {
-                    "rich_text": [
-                        { "text": { "content": analysis_text } }
-                    ]
-                }
-            }
-        ]
+        "children": children_blocks
     }
     response = requests.post(url, headers=headers, json=payload)
     
