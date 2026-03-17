@@ -74,10 +74,6 @@ def write_to_notion(title_content, analysis_text,tags_list):
             "Tag": {
                 "multi_select": [{"name": tag} for tag in tags_list if tag]
             },
-            # --- 新增：數字類型的序號 ---
-            "ID": {
-                "number": serial_number
-            },
             # --- 新增：寫入日期欄位 ---
             "Date": {
                 "date": {"start": today_date}
