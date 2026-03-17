@@ -82,7 +82,7 @@ def write_to_notion(title_content, analysis_text,tags_list):
             }
         }
     }
-    res = requests.post(url, headers=headers, json=payload)
+    response = requests.post(url, headers=headers, json=payload)
     
     # --- 偵錯核心開始 ---
     if response.status_code != 200:
@@ -92,7 +92,7 @@ def write_to_notion(title_content, analysis_text,tags_list):
     else:
         print("✅ 成功寫入 Notion！")
     # --- 偵錯核心結束 ---
-    return res.status_code
+    return response.status_code
 
 if __name__ == "__main__":
     # 加入這行來偵錯：
