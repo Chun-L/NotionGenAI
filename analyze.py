@@ -19,7 +19,13 @@ def call_gemini_for_random_topic():
     1. 隨機性：每天挑選不同的對象，不要重複。
     2. 格式：請嚴格遵守以下格式輸出，不要有額外廢話：
        TITLE: [創作者姓名] - [具體作品名稱]
+       AUTHOR: [創作者姓名]
+       TECHNIQUES: [手法1, 手法2]
        CONTENT: [以娥蘇拉勒瑰恩sterring the craft的角度與方法，針對該作品寫作技巧、意象運用、或敘事結構等等內容做深度分析]
+    
+    範例：
+    AUTHOR: 石黑一雄
+    TECHNIQUES: 壓抑敘事, 第一人稱侷限視角
     """
     
     response = client.models.generate_content(
@@ -30,13 +36,22 @@ def call_gemini_for_random_topic():
     
     # 解析 AI 回傳的標題與內容
     try:
-        title = full_text.split("TITLE:")[1].split("CONTENT:")[0].strip()
-        content = full_text.split("CONTENT:")[1].strip()
-    except Exception:
-        title = "每日隨機寫作分析"
-        content = full_text
+        author = full_text.split("AUTHOR:")[1].split("TECHNIQUES:")[0].strip()
+        techniques_raw = full_text.split("TECHNIQUES:")[1].split("CONTENT:")[0].strip()
+        # 將手法字串轉為列表，例如 ["壓抑敘事", "第一人稱侷限視角"]
+        tech_list = [t.strip() for t in techniques_raw.split(",")]
         
-    return title, content
+        title = full_text.split("TITLE:")[1].split("AUTHOR:")[0].strip()
+        content = full_text.split("CONTENT:")[1].strip()
+        
+        # 合併所有標籤：作者 + 手法
+        all_tags = [author] + tech_list
+    except:
+        title = "自動分析"
+        content = full_text
+        all_tags = ["未分類"]
+        
+    return title, content, all_tags
 
 def write_to_notion(title_content, analysis_text):
     url = "https://api.notion.com/v1/pages"
@@ -54,10 +69,31 @@ def write_to_notion(title_content, analysis_text):
             },
             "分析內容": {
                 "rich_text": [{"text": {"content": analysis_text[:2000]}}]
+            },
+            # --- 處理多選標籤 ---
+            "Tag": {
+                "multi_select": [{"name": tag} for tag in tags_list if tag]
+            },
+            # --- 新增：數字類型的序號 ---
+            "ID": {
+                "number": serial_number
+            },
+            # --- 新增：寫入日期欄位 ---
+            "Date": {
+                "date": {"start": today_date}
             }
         }
     }
     res = requests.post(url, headers=headers, json=payload)
+    
+    # --- 偵錯核心開始 ---
+    if response.status_code != 200:
+        print(f"❌ 寫入失敗，狀態碼：{response.status_code}")
+        print("🔍 詳細錯誤訊息：")
+        print(response.json())  # 這行會印出 Notion 具體討厭哪裡
+    else:
+        print("✅ 成功寫入 Notion！")
+    # --- 偵錯核心結束 ---
     return res.status_code
 
 if __name__ == "__main__":
