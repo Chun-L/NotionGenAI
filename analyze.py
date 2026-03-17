@@ -102,10 +102,15 @@ if __name__ == "__main__":
      #   print(f"可用模型: {m.name}")
 
     
-    generated_title, generated_content = call_gemini_for_random_topic()
-    print(f"AI 今日選題: {generated_title}")
+    # 1. 修改這裡，增加一個變數來接收標籤列表 (tags)
+    generated_title, generated_content, generated_tags = call_gemini_for_random_topic()
     
-    status = write_to_notion(generated_title, generated_content)
+    print(f"AI 今日選題: {generated_title}")
+    print(f"標籤內容: {generated_tags}")
+    
+    # 2. 同時也要記得把標籤傳給寫入函數
+    status = write_to_notion(generated_title, generated_content, generated_tags)
+    
     if status == 200:
         print("成功寫入 Notion！")
     else:
