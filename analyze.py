@@ -10,7 +10,7 @@ DATABASE_ID = os.environ["DATABASE_ID"]
 
 def call_gemini_for_random_topic():
     # 使用目前最穩定的模型名稱 'gemini-2.0-flash' 或 'gemini-1.5-flash'
-    model_id = "gemini-2.0-flash" 
+    model_id = "gemini-1.5-flash" 
     
     prompt = """
     任務：請隨機挑選一位具有『獨特氛圍感』或『文字質感』的創作者（如村上春樹、Lana Del Rey、Taylor Swift、或是具備高度敘事感的漫畫家）。
