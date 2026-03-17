@@ -69,9 +69,6 @@ def write_to_notion(title_content, analysis_text,tags_list):
             "Name": {
                 "title": [{"text": {"content": title_content}}]
             },
-            "分析內容": {
-                "rich_text": [{"text": {"content": analysis_text[:2000]}}]
-            },
             # --- 處理多選標籤 ---
             "Tag": {
                 "multi_select": [{"name": tag} for tag in tags_list if tag]
@@ -80,7 +77,39 @@ def write_to_notion(title_content, analysis_text,tags_list):
             "Date": {
                 "date": {"start": today_date}
             }
-        }
+        },
+        "children": [
+            # 1. 插入目錄區塊
+            {
+                "object": "block",
+                "type": "table_of_contents",
+                "table_of_contents": { "color": "default" }
+            },
+            # 2. 分隔線 (讓版面更美觀)
+            {
+                "object": "block",
+                "type": "divider",
+                "divider": {}
+            },
+            # 3. 內容大標題 (Heading 2) - 這會出現在目錄中
+            {
+                "object": "block",
+                "type": "heading_2",
+                "heading_2": {
+                    "rich_text": [ { "text": { "content": "深度文本分析" } } ]
+                }
+            },
+            # 4. 實際分析內容 (Paragraph)
+            {
+                "object": "block",
+                "type": "paragraph",
+                "paragraph": {
+                    "rich_text": [
+                        { "text": { "content": analysis_text } }
+                    ]
+                }
+            }
+        ]
     }
     response = requests.post(url, headers=headers, json=payload)
     
